@@ -29,6 +29,7 @@ class PMMLVerifier:
 
     def __transformVerification(self):
         check = TransformedDataVerifier(self.pythonDataset, self.pmmlDataset).verifier()
+        # if check was 0 raise an error
         if check == 0:
             raise ValueError("The Transformed data does not match")
         return check
