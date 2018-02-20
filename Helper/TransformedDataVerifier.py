@@ -22,12 +22,17 @@ class TransformedDataVerifier:
         if len(column1) != len(column2):
             return False, 'Length of the number of rows in  don\'t match'
 
+        # check whether row order is different
+        rowOrderCheck = column1.value_counts().eq(column2.value_counts()).unique()
+        if len(rowOrderCheck) != 1 or not rowOrderCheck[0]:
+            return False, 'The row orders are not same'
+
         # check whether content of both columns are equal , if not equal then column order is different or transformed
-        # data is different or row order is different
+        # transformed data is different
         rowCheck = column1.eq(column2)
         uniqueRowChecks = rowCheck.unique()
-        if len(uniqueRowChecks) != 1 or uniqueRowChecks[0] == False:
-            return False, 'The data in column ' + column1 + ' of python CSV and column' + column2 + ' of PMMl CSV' \
+        if len(uniqueRowChecks) != 1 or not uniqueRowChecks[0]:
+            return False, 'The data in column ' + column1 + ' of python CSV and column' + column2 + ' of PMML CSV' \
                                                                                                     'are not same.'
 
         return True, ''

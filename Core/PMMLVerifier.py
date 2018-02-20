@@ -5,11 +5,12 @@
 """
 from Helper.CSVReader import CSVReader
 from Helper.TransformedDataVerifier import TransformedDataVerifier
+import pandas as pd
 
 
 class PMMLVerifier:
-    # format pythonCSV path , PMMLCSV path , Python
-    def __init__(self, pythonCsv, pmmlCsv, modelObject, **options):
+    # format pythonCSV path or dataFrame , PMMLCSV path or dataFrame , model object and options
+    def __init(self, pythonCsv, pmmlCsv, **options):
         # initializing variables for CSV reading
         sep1 = sep2 = ','
         encoding1 = encoding2 = 'cp1256'
@@ -20,12 +21,18 @@ class PMMLVerifier:
         encoding1 = options.get('encoding1', encoding1)
         encoding2 = options.get('encoding2', encoding2)
 
-        # converting CSV to pandas dataFrame
-        self.pythonDataset = CSVReader().read_csv(pythonCsv, sep=sep1, encoding=encoding1)
-        self.pmmlDataset = CSVReader().read_csv(pmmlCsv, sep=sep2, encoding=encoding2)
+        # converting CSV to pandas dataFrame if the argument for pythonCSV and pmmlCSV were paths
+        if type(pythonCsv) == str:
+            self.pythonDataset = CSVReader().read_csv(pythonCsv, sep=sep1, encoding=encoding1)
+        else:
+            self.pythonDataset = pythonCsv
+
+        if type(pmmlCsv) == str:
+            self.pmmlDataset = CSVReader().read_csv(pmmlCsv, sep=sep2, encoding=encoding2)
+        else:
+            self.pmmlDataset = pmmlCsv
 
         # getting modelObject
-        self.modelObject = modelObject
 
     def __transformVerification(self):
         check = TransformedDataVerifier(self.pythonDataset, self.pmmlDataset).verifier()
