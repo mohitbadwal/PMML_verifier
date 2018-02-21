@@ -10,7 +10,12 @@ import pandas as pd
 
 class PMMLVerifier:
     # format pythonCSV path or dataFrame , PMMLCSV path or dataFrame , model object and options
-    def __init(self, pythonCsv, pmmlCsv, **options):
+    def __init__(self, pythonCsv, pmmlCsv, **options):
+
+        """
+                    :param pythonCsv: CSV path for python file or DataFrame object
+                    :param pmmlCsv: CSV path for pmml file or DataFrame object
+        """
         # initializing variables for CSV reading
         sep1 = sep2 = ','
         encoding1 = encoding2 = 'cp1256'
@@ -35,10 +40,10 @@ class PMMLVerifier:
         # getting modelObject
 
     def __transformVerification(self):
-        check = TransformedDataVerifier(self.pythonDataset, self.pmmlDataset).verifier()
+        check, reasonFailure = TransformedDataVerifier(self.pythonDataset, self.pmmlDataset).verifier()
         # if check was 0 raise an error
         if check == 0:
-            raise ValueError("The Transformed data does not match")
+            raise ValueError(reasonFailure)
         return check
 
     def verify(self):
