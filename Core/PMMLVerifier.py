@@ -4,29 +4,32 @@
     
 """
 from Helper.CSVReader import CSVReader
+from Helper.PredictionsVerifier import PredictionsVerifier
 from Helper.TransformedDataVerifier import TransformedDataVerifier
 import pandas as pd
 
 
 class PMMLVerifier:
-
     # format pythonCSV path or dataFrame , PMMLCSV path or dataFrame , model object and options
     # the train CSV's dhould only have the transformed data
     # the test CSV's should have this pattern (transformed data , predictions , [probabilities]) for classification
     # for regression (transformed data , predictions)
-    def __init__(self, pythonCsv, pmmlCsv,checkFor='test',problemType='classification', **options):
+    def __init__(self, pythonCsv, pmmlCsv, checkFor='test', problemType='classification', **options):
 
         """
                     :param pythonCsv: CSV path for python file or DataFrame object
                     :param pmmlCsv: CSV path for pmml file or DataFrame object
                     :param problemType: 'classification' or 'regression' , by default 'classification'
+                    :param checkFor: 'test' for testing dataset and 'train' for training dataset
                     :arg options: for multi class set classes=(number of classes) by default 2
                                 for setting different separators or encoding for the CSV which are passed ,
-                                set sep1 and encoding1 for first CSV and sep2 and encoding2 for second CSV
+                                set sep1 and encoding1 for first CSV and sep2 and encoding2 for second CSV,
+                                set rounding param if you want a custom rounding value , default is 5
         """
 
         # initializing variables for CSV reading
         sep1 = sep2 = ','
+        rounding = 5
         encoding1 = encoding2 = 'cp1256'
         classes = 2
         problemTypeList = ['classification', 'regression']
@@ -45,6 +48,7 @@ class PMMLVerifier:
         sep2 = options.get('sep2', sep2)
         encoding1 = options.get('encoding1', encoding1)
         encoding2 = options.get('encoding2', encoding2)
+        rounding = options.get('rounding', rounding)
         if problemType == 'classification':
             classes = options.get('classes', classes)
         else:
@@ -52,35 +56,36 @@ class PMMLVerifier:
 
         # converting CSV to pandas dataFrame if the argument for pythonCSV and pmmlCSV were paths
         if type(pythonCsv) == str:
-            self.pythonDataset = CSVReader().read_csv(pythonCsv, sep=sep1, encoding=encoding1)
+            self.__pythonDataset = CSVReader().read_csv(pythonCsv, sep=sep1, encoding=encoding1)
         else:
-            self.pythonDataset = pythonCsv
+            self.__pythonDataset = pythonCsv
 
         if type(pmmlCsv) == str:
-            self.pmmlDataset = CSVReader().read_csv(pmmlCsv, sep=sep2, encoding=encoding2)
+            self.__pmmlDataset = CSVReader().read_csv(pmmlCsv, sep=sep2, encoding=encoding2)
         else:
-            self.pmmlDataset = pmmlCsv
+            self.__pmmlDataset = pmmlCsv
 
-        self.checkFor = checkFor
+        self.__checkFor = checkFor
+        self.__rounding = rounding
 
         if checkFor == 'test':
             # putting the predictions to a different DataFrame
-            self.pythonPredictions = self.pythonDataset.iloc[:, (-2 - classes):-1:-1]
-            self.pmmlPredictions = self.pmmlDataset.iloc[:, (-2 - classes):-1:-1]
+            self.__pythonPredictions = self.__pythonDataset.iloc[:, -1:(-2 - classes):-1]
+            self.__pmmlPredictions = self.__pmmlDataset.iloc[:, -1:(-2 - classes):-1]
 
             # getting pure transformed data as a DataFrame
-            self.pythonDataset = self.pythonDataset.iloc[:, :(-1 - classes)]
-            self.pmmlDataset = self.pmmlDataset.iloc[:, :(-1 - classes)]
+            self.__pythonDataset = self.__pythonDataset.iloc[:, :(-1 - classes)]
+            self.__pmmlDataset = self.__pmmlDataset.iloc[:, :(-1 - classes)]
 
     def __transformVerification(self):
-        check, reasonFailure = TransformedDataVerifier(self.pythonDataset, self.pmmlDataset).verifier()
+        check, reasonFailure = TransformedDataVerifier(self.__pythonDataset, self.__pmmlDataset,rounding = self.__rounding).verifier()
         # if check was 0 raise an error
         if check == 0:
             raise ValueError(reasonFailure)
         return check
 
     def __predictionVerification(self):
-        check, reasonFailure = TransformedDataVerifier(self.pythonPredictions, self.pmmlPredictions).verifier()
+        check, reasonFailure = PredictionsVerifier(self.__pythonPredictions, self.__pmmlPredictions).verifier()
         # if check was 0 raise an error
         if check == 0:
             raise ValueError(reasonFailure)
@@ -88,5 +93,6 @@ class PMMLVerifier:
 
     def verify(self):
         self.__transformVerification()
-        if self.checkFor == 'test':
+        if self.__checkFor == 'test':
             self.__predictionVerification()
+        print("Verification was Successful")
