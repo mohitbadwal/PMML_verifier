@@ -23,6 +23,11 @@ class TransformedDataVerifier:
         if len(column1) != len(column2):
             return False, 'Length of the number of rows in  don\'t match'
 
+        # check if the dtypes are same
+        if column1.dtype != column2.dtype:
+            return False, 'The data type for '+ column1Name + ' of python CSV and column ' + column2Name + 'of PMML CSV' \
+                                                                                                                    ' are not same.'
+
         # check if names of column1 and column2 match
         if str(column2Name) != str(column1Name):
             tempCheck = -1
