@@ -5,8 +5,10 @@
 """
 
 import numpy as np
+
+
 class TransformedDataVerifier:
-    def __init__(self, dataset1, dataset2,rounding) -> None:
+    def __init__(self, dataset1, dataset2, rounding) -> None:
 
         """
             :param dataset1: first pandas DataFrame
@@ -26,8 +28,8 @@ class TransformedDataVerifier:
 
         # check if the dtypes are same
         if column1.dtype != column2.dtype:
-            print('The data type for '+ column1Name + ' of python CSV and column ' + column2Name + ' of PMML CSV' \
-                                                                                                                    ' are not same.')
+            print('The data type for ' + column1Name + ' of python CSV and column ' + column2Name + ' of PMML CSV' \
+                                                                                                    ' are not same.')
 
         # check if names of column1 and column2 match
         if str(column2Name) != str(column1Name):

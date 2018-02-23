@@ -5,6 +5,7 @@
 """
 import numpy as np
 
+
 class PredictionsVerifier:
     def __init__(self, predictions1, predictions2):
         """
