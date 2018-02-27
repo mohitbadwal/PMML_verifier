@@ -3,7 +3,6 @@
     on 2/26/2018
     
 """
-from xml.etree import ElementTree
 
 import xmltodict
 import numpy as np
